@@ -1,11 +1,11 @@
 import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cart/cart_model.dart';
-import 'package:cart/cart_provider.dart';
-import 'package:cart/cart_screen.dart';
+import 'package:cart/model/cart_model.dart';
+import 'package:cart/provider/cart_provider.dart';
 import 'package:cart/controller/getProductController.dart';
-import 'package:cart/db_helper.dart';
+import 'package:cart/db/db_helper.dart';
 import 'package:cart/model/ProductModel.dart';
+import 'package:cart/view/cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -37,20 +37,32 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   void initState() {
     isLoading = true;
+    
     getProduct();
     super.initState();
   }
 
-  List<Products> productsList = [];
+  insertProductToDB() async {
+   await dbHelper!.insertProduct(productsList);
+  }
 
-  getProduct() async {
+  getProductFromDB() async {
+  productsListFromDB = await dbHelper!.getProductList();
+  }
+
+  List<Products> productsList = [];
+  List<Products> productsListFromDB = [];
+
+ getProduct() async {
     var data = await ProductController().getProduct();
     productsList = data.data!.products!;
     print(productsList);
-
+    await insertProductToDB();
+    await getProductFromDB();
     setState(() {
       isLoading = false;
     });
+    
   }
 
   @override
@@ -92,7 +104,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               children: [
                 Expanded(
                   child: ListView.builder(
-                      itemCount: productsList.length,
+                      itemCount: productsListFromDB.length,
                       itemBuilder: (context, index) {
                         return Card(
                           child: Padding(
@@ -114,7 +126,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     CachedNetworkImage(
                                       height: 100,
                                       width: 100,
-                                      imageUrl: productsList[index].prodImage!,
+                                      imageUrl: productsListFromDB[index].prodImage!,
                                       placeholder: (context, url) =>
                                           CircularProgressIndicator(),
                                       errorWidget: (context, url, error) =>
@@ -131,7 +143,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            productsList[index].prodName!,
+                                            productsListFromDB[index].prodName!,
                                             style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w500),
@@ -139,8 +151,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                           SizedBox(
                                             height: 5,
                                           ),
-                                          Text(
-                                            productsList[index].prodPrice!,
+                                          Text('₹' +
+                                            productsListFromDB[index].prodPrice!,
                                             style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w500),
@@ -167,25 +179,25 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                                         productId:
                                                             index.toString(),
                                                         productName:
-                                                            productsList[index]
+                                                            productsListFromDB[index]
                                                                 .prodName!,
                                                         initialPrice: double
-                                                            .parse(productsList[
+                                                            .parse(productsListFromDB[
                                                                     index]
                                                                 .prodPrice!),
                                                         productPrice: double
-                                                            .parse(productsList[
+                                                            .parse(productsListFromDB[
                                                                     index]
                                                                 .prodPrice!),
                                                         quantity: 1,
                                                         unitTag: '',
                                                         image:
-                                                            productsList[index]
+                                                            productsListFromDB[index]
                                                                 .prodImage!))
                                                     .then((value) {
                                                   cart.addTotalPrice(
                                                       double.parse(
-                                                          productsList[index]
+                                                          productsListFromDB[index]
                                                               .prodPrice!));
                                                   cart.addCounter();
 

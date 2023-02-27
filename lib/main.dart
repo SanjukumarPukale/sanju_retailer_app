@@ -1,9 +1,15 @@
-import 'package:cart/cart_provider.dart';
-import 'package:cart/product_list.dart';
+import 'package:cart/provider/cart_provider.dart';
+import 'package:cart/firebase_options.dart';
+import 'package:cart/view/product_list.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+);
   runApp(const MyApp());
 }
 

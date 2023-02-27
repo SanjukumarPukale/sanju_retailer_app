@@ -1,11 +1,11 @@
 import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cart/cart_model.dart';
-import 'package:cart/db_helper.dart';
+import 'package:cart/provider/cart_provider.dart';
+import 'package:cart/model/cart_model.dart';
+import 'package:cart/db/db_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'cart_provider.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -324,14 +324,6 @@ class _CartScreenState extends State<CartScreen> {
                     : true,
                 child: Column(
                   children: [
-                    ReusableWidget(
-                      title: 'Sub Total',
-                      value: r'$' + value.getTotalPrice().toStringAsFixed(2),
-                    ),
-                    ReusableWidget(
-                      title: 'Discout 5%',
-                      value: r'$' + '20',
-                    ),
                     ReusableWidget(
                       title: 'Total',
                       value: r'$' + value.getTotalPrice().toStringAsFixed(2),

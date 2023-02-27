@@ -47,11 +47,12 @@ class Data {
 }
 
 class Products {
-  String? prodImage;
   String? prodId;
-  String? prodName;  
-  String? prodShortName;
+  String? prodName; 
   String? prodPrice;
+  String? prodImage;
+  String? prodShortName;
+  
   
 
   Products(
