@@ -1,6 +1,8 @@
 import 'package:cart/provider/cart_provider.dart';
 import 'package:cart/firebase_options.dart';
+import 'package:cart/view/login_screen.dart';
 import 'package:cart/view/product_list.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,13 +12,15 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
 );
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
+  var user = FirebaseAuth.instance.currentUser;
+
   @override
   Widget build(BuildContext context) {
    return ChangeNotifierProvider(
@@ -28,7 +32,7 @@ class MyApp extends StatelessWidget {
          theme: ThemeData(
            primarySwatch: Colors.blue,
          ),
-         home: const ProductListScreen(),
+         home: (user == null) ? PhoneLoginScreen() : ProductListScreen(),
        );
      }),
 

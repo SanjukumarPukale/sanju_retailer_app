@@ -6,6 +6,8 @@ import 'package:cart/controller/getProductController.dart';
 import 'package:cart/db/db_helper.dart';
 import 'package:cart/model/ProductModel.dart';
 import 'package:cart/view/cart_screen.dart';
+import 'package:cart/view/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,27 +35,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
   DBHelper? dbHelper = DBHelper();
   // List productList = [];
   bool isLoading = false;
+  FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
     isLoading = true;
-    
+
     getProduct();
     super.initState();
   }
 
   insertProductToDB() async {
-   await dbHelper!.insertProduct(productsList);
+    await dbHelper!.insertProduct(productsList);
   }
 
   getProductFromDB() async {
-  productsListFromDB = await dbHelper!.getProductList();
+    productsListFromDB = await dbHelper!.getProductList();
   }
 
   List<Products> productsList = [];
   List<Products> productsListFromDB = [];
 
- getProduct() async {
+  getProduct() async {
     var data = await ProductController().getProduct();
     productsList = data.data!.products!;
     print(productsList);
@@ -62,7 +65,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     setState(() {
       isLoading = false;
     });
-    
   }
 
   @override
@@ -70,9 +72,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
     final cart = Provider.of<CartProvider>(context);
     return Scaffold(
       appBar: AppBar(
+        leading: InkWell(
+              onTap: () {
+                logOut();
+              },
+              child: Icon(Icons.logout)),
+        automaticallyImplyLeading: false,
         title: Text('Product List'),
         centerTitle: true,
         actions: [
+          SizedBox(width: 20.0),
           InkWell(
             onTap: () {
               Navigator.push(context,
@@ -126,7 +135,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     CachedNetworkImage(
                                       height: 100,
                                       width: 100,
-                                      imageUrl: productsListFromDB[index].prodImage!,
+                                      imageUrl:
+                                          productsListFromDB[index].prodImage!,
                                       placeholder: (context, url) =>
                                           CircularProgressIndicator(),
                                       errorWidget: (context, url, error) =>
@@ -151,8 +161,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                           SizedBox(
                                             height: 5,
                                           ),
-                                          Text('₹' +
-                                            productsListFromDB[index].prodPrice!,
+                                          Text(
+                                            '₹' +
+                                                productsListFromDB[index]
+                                                    .prodPrice!,
                                             style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w500),
@@ -179,25 +191,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                                         productId:
                                                             index.toString(),
                                                         productName:
-                                                            productsListFromDB[index]
+                                                            productsListFromDB[
+                                                                    index]
                                                                 .prodName!,
-                                                        initialPrice: double
-                                                            .parse(productsListFromDB[
+                                                        initialPrice: double.parse(
+                                                            productsListFromDB[
                                                                     index]
                                                                 .prodPrice!),
-                                                        productPrice: double
-                                                            .parse(productsListFromDB[
+                                                        productPrice: double.parse(
+                                                            productsListFromDB[
                                                                     index]
                                                                 .prodPrice!),
                                                         quantity: 1,
                                                         unitTag: '',
                                                         image:
-                                                            productsListFromDB[index]
+                                                            productsListFromDB[
+                                                                    index]
                                                                 .prodImage!))
                                                     .then((value) {
                                                   cart.addTotalPrice(
                                                       double.parse(
-                                                          productsListFromDB[index]
+                                                          productsListFromDB[
+                                                                  index]
                                                               .prodPrice!));
                                                   cart.addCounter();
 
@@ -258,6 +273,52 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 ),
               ],
             ),
+    );
+  }
+
+  Future<void> logOut() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Are you sure?'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Text('We will be redirected to login page.'),
+                SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    ElevatedButton(
+                      child: Text('No'),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Dismiss the Dialog
+                      },
+                    ),
+                    ElevatedButton(
+                      child: Text('Yes'),
+                      onPressed: () {
+                        _auth.signOut();
+                        Navigator.pushAndRemoveUntil<void>(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) => PhoneLoginScreen(),
+                          ),
+                          (Route<dynamic> route) => false,
+                        );
+                      },
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
